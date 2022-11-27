@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>MARIA LENTINI</title>
+        <h1>MARIA LENTINI</h1>
+        <script type="text/javascript" src="d3/d3.v3.js"></script>
+        <style type="text/css">
+
+            .axis path,
+            .axis line {
+                fill: none;
+                stroke: black;
+                shape-rendering: crispEdges;
+            }
+
+            .axis text {
+                font-family: sans-serif;
+                font-size: 11px;
+            }
+
+		</style>
+    </head>
+    <body>
+        <script type="text/javascript">
+            //Width and height
+            var w = 500;
+            var h = w * 3 / 4;
+            var padding = 30;
+            var numDataPoints = 50;
+
+            var dataset = [];                                       //Initialize empty array
+            var xValues = [];
+            for (var i = 0; i < numDataPoints; i++) {                          //Loop 25 times
+                var xCoord = Math.round(Math.random() * 100);    //New random number (0-30)
+                var yCoord = Math.round(Math.random() * 100);
+                dataset.push([xCoord, yCoord]);                            //Add new number to array
+                xValues.push(xCoord);
+            }
+
+            //Compute mean of x-values
+            var avgX = xValues.reduce((a, b) => a + b, 0) / xValues.length;
+
+            //Create SVG element
+            var svg = d3.select("body")
+                .append("svg")
+                .attr("width", w)
+                .attr("height", h);
+            
+            //Create dynamic x and y scales
+            var xScale = d3.scale.linear()
+                     .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                     .range([padding, w - padding * 2]);
+
+            var yScale = d3.scale.linear()
+                .domain([0, d3.max(dataset, function(d) { return d[1]; })])
+                .range([h - padding, padding]);
+
+            // scale for size of objects
+            var sizeScale = d3.scale.linear()
+                    .domain([0, d3.max(dataset, function(d) { return d[0]; })])
+                    .range([5, 50]);
+            
+            //Randomly assign points circle or triangle
+            var objAssign = []
+            for (var i = 0; i < numDataPoints; i++) {
+                var assignment = Math.round(Math.random())
+                objAssign.push(assignment)
+            }
+
+            //Symbol generators
+            var symbolTypes = {
+                "triangleDown": d3.svg.symbol().type("triangle-down"),
+                "circle": d3.svg.symbol().type("circle")
+            };
+
+            //Generate scatterplot
+            svg.selectAll("path")
+                .data(dataset)
+                .enter().append("path")
+                .attr("transform", function(d) { return "translate(" + xScale(d[0]) + "," + yScale(d[1]) + ")"; })
+                .attr("d", function(d, i) {
+                    var size = sizeScale(d[0]);
+                    if (objAssign[i] == 0) 
+                        return symbolTypes.triangleDown.size(size)();   //Xcoord determines size of object
+                    else
+                        return symbolTypes.circle.size(size)();         //Xcoord determines size of object
+                })
+                //.attr("d", d3.svg.symbol().size(10).type("circle"))
+                .attr("stroke", function(d) {
+                    if (d[0] < avgX) {
+                        return "green";
+                    } else {
+                        return "blue";
+                    }
+                })
+                .style('fill', 'white');
+
+            //Define Y axis
+            var yAxis = d3.svg.axis()
+                  .scale(yScale)
+                  .orient("left")
+                  .ticks(5);
+
+            //Define X axis
+            var xAxis = d3.svg.axis()
+                  .scale(xScale)
+                  .orient("bottom")
+                  .ticks(5);
+
+            //Create Y axis
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(" + padding + ",0)")
+                .call(yAxis);
+
+            svg.append("g")
+                .attr("class", "axis")
+                .attr("transform", "translate(0," + (h - padding) + ")")
+                .call(xAxis);
+        </script>
+    </body>
+</html>  
